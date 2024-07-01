@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from pprint import pprint
 from typing import Optional, Union
 
 import yaml
@@ -200,6 +201,8 @@ def sql_finder(text: str) -> str:
     # ```sql
     #    <query>
     # ```
+
+    pprint(f'Query llm raw {text}\n\n')
     sql_code_pattern = re.compile(r'```sql\s+(.*?)\s+```', re.DOTALL)
     match = sql_code_pattern.search(text)
     if match is not None:
@@ -226,6 +229,8 @@ def query_db(query: str) -> str:
 
     # get tool configs
     query_db_info = get_config_info(CONFIG_PATH)['query_db']
+
+    pprint(f'NL query from controller llm  {query}\n\n')
 
     # set the llm based in tool configs
     if query_db_info['llm']['api'] == 'sambastudio':
@@ -292,6 +297,8 @@ def query_db(query: str) -> str:
     query_generation_chain = prompt | llm | RunnableLambda(sql_finder)
     table_info = db.get_table_info()
     query = query_generation_chain.invoke({'input': query, 'table_info': table_info})
+
+    pprint(f'Query llm filtered {query}\n\n')
 
     queries = query.split(';')
 

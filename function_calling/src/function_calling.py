@@ -286,6 +286,7 @@ class FunctionCallingLlm:
         tool_call_id = 0  # identification for each tool calling required to create ToolMessages
 
         for i in range(max_it):
+            pprint(f'History before it {history}\n\n')
             json_parsing_chain = RunnableLambda(self.jsonFinder) | JsonOutputParser()
 
             prompt = self.msgs_to_llama3_str(history)
@@ -296,10 +297,11 @@ class FunctionCallingLlm:
             if final_answer:  # if response was marked as final response in execution
                 final_response = tools_msgs[0]
                 if debug:
-                    pprint(history)
+                    pprint(f'final history it {history}\n\n')
                 return final_response
             else:
                 history.append(ToolMessage('\n'.join(tools_msgs), tool_call_id=tool_call_id))
                 tool_call_id += 1
+                pprint(f'History after it {history}\n\n')
 
         raise Exception('not a final response yet', history)
