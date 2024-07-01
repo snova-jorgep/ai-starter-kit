@@ -16,7 +16,7 @@ tools:
         "coe": True #set as true if using Sambastudio CoE endpoint
         "select_expert": "Meta-Llama-3-70B-Instruct" #set if using Sambaverse or SambaStudio CoE llm expert
       db:
-        "path": "data/chinook.db" #"data/financial.db" # 
+        "path": "data/financial.db" #"data/chinook.db"
 
     translate:
       llm: 
