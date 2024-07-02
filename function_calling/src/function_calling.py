@@ -17,6 +17,8 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import StructuredTool, Tool
 
+from .fastCoE import SambaStudioFastCoE
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 kit_dir = os.path.abspath(os.path.join(current_dir, '..'))
 repo_dir = os.path.abspath(os.path.join(kit_dir, '..'))
@@ -110,8 +112,13 @@ class FunctionCallingLlm:
         Set the LLM to use.
         sambaverse, sambastudio and  CoE endpoints implemented.
         """
+        if self.llm_info['api'] == 'fastcoe':
+            llm = SambaStudioFastCoE(
+                max_tokens=self.llm_info['max_tokens_to_generate'],
+                model=self.llm_info['select_expert'],
+            )
 
-        if self.llm_info['api'] == 'sambastudio':
+        elif self.llm_info['api'] == 'sambastudio':
             if self.llm_info['coe']:
                 llm = SambaStudio(
                     streaming=True,
@@ -271,6 +278,27 @@ class FunctionCallingLlm:
                 raise ValueError(f'Invalid message type: {msg.type}')
         return '\n'.join(formatted_msgs)
 
+    def msgs_to_fast_coe(self, msgs: list) -> list:
+        """
+        convert a list of langchain messages with roles to expected FastCoE input
+
+        Args:
+            msgs (list): The list of langchain messages.
+        """
+        formatted_msgs = []
+        for msg in msgs:
+            if msg.type == 'system':
+                formatted_msgs.append({'role': 'system', 'content': msg.content})
+            elif msg.type == 'human':
+                formatted_msgs.append({'role': 'user', 'content': msg.content})
+            elif msg.type == 'ai':
+                formatted_msgs.append({'role': 'assistant', 'content': msg.content})
+            elif msg.type == 'tool':
+                formatted_msgs.append({'role': 'tools', 'content': msg.content})
+            else:
+                raise ValueError(f'Invalid message type: {msg.type}')
+        return json.dumps(formatted_msgs)
+
     def function_call_llm(self, query: str, max_it: int = 5, debug: bool = False) -> str:
         """
         invocation method for function calling workflow
@@ -289,8 +317,12 @@ class FunctionCallingLlm:
             pprint(f'History before it {history}\n\n')
             json_parsing_chain = RunnableLambda(self.jsonFinder) | JsonOutputParser()
 
-            prompt = self.msgs_to_llama3_str(history)
+            if self.llm_info['api'] == 'fastcoe':
+                prompt = self.msgs_to_fast_coe(history)
+            else:
+                prompt = self.msgs_to_llama3_str(history)
             llm_response = self.llm.invoke(prompt)
+            print(f'raw llm controlelr response {llm_response}')
             parsed_tools_llm_response = json_parsing_chain.invoke(llm_response)
             history.append(AIMessage(llm_response))
             final_answer, tools_msgs = self.execute(parsed_tools_llm_response)

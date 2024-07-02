@@ -10,7 +10,7 @@ from typing import Optional, Union
 import yaml
 from dotenv import load_dotenv
 from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_community.llms.sambanova import SambaStudio, Sambaverse
 from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from langchain_community.utilities import SQLDatabase
@@ -19,6 +19,8 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import StructuredTool, Tool, ToolException, tool
 from langchain_experimental.utilities import PythonREPL
+
+from .fastCoE import SambaStudioFastCoE
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 kit_dir = os.path.abspath(os.path.join(current_dir, '..'))
@@ -44,6 +46,27 @@ def get_config_info(config_path: str) -> dict:
     tools_info = config['tools']
 
     return tools_info
+
+    def msgs_to_fast_coe(self, msgs: list) -> list:
+        """
+        convert a list of langchain messages with roles to expected FastCoE input
+
+        Args:
+            msgs (list): The list of langchain messages.
+        """
+        formatted_msgs = []
+        for msg in msgs:
+            if msg.type == 'system':
+                formatted_msgs.append({'role': 'system', 'content': msg.content})
+            elif msg.type == 'human':
+                formatted_msgs.append({'role': 'user', 'content': msg.content})
+            elif msg.type == 'ai':
+                formatted_msgs.append({'role': 'assistant', 'content': msg.content})
+            elif msg.type == 'tool':
+                formatted_msgs.append({'role': 'tools', 'content': msg.content})
+            else:
+                raise ValueError(f'Invalid message type: {msg.type}')
+        return json.dumps(formatted_msgs)
 
 
 ##Get time tool
@@ -233,7 +256,12 @@ def query_db(query: str) -> str:
     pprint(f'NL query from controller llm  {query}\n\n')
 
     # set the llm based in tool configs
-    if query_db_info['llm']['api'] == 'sambastudio':
+    if query_db_info['llm']['api'] == 'fastcoe':
+        llm = SambaStudioFastCoE(
+            max_tokens=query_db_info['llm']['max_tokens_to_generate'],
+            model=query_db_info['llm']['select_expert'],
+        )
+    elif query_db_info['llm']['api'] == 'sambastudio':
         if query_db_info['llm']['coe']:
             # Using SambaStudio CoE expert as model for generating the SQL Query
             llm = SambaStudio(
@@ -292,9 +320,33 @@ def query_db(query: str) -> str:
         <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""  # noqa E501
     )
 
+    prompt_fastcoe = ChatPromptTemplate.from_messages(
+        [
+            (
+                'system',
+                """ {table_info}
+        
+                Generate a query using valid SQLite to answer the following questions for the summarized tables schemas provided above.
+                Do not assume the values on the database tables before generating the SQL query, always generate a SQL that query what is asked. 
+                The query must be in the format: ```sql\nquery\n```
+                
+                Example:
+                
+                ```sql
+                SELECT * FROM mainTable;
+                ```
+                """,
+            ),
+            ('user', '{input}'),
+        ]
+    )
+
     # Chain that receives the natural language input and the table schema, then pass the teh formatted prompt to the llm
     # and finally execute the sql finder method, retrieving only the filtered SQL query
-    query_generation_chain = prompt | llm | RunnableLambda(sql_finder)
+    if query_db_info['llm']['api'] == 'fastcoe':
+        query_generation_chain = prompt | llm | RunnableLambda(sql_finder)  # prompt_fastcoe
+    else:
+        query_generation_chain = prompt | llm | RunnableLambda(sql_finder)
     table_info = db.get_table_info()
     query = query_generation_chain.invoke({'input': query, 'table_info': table_info})
 
@@ -337,7 +389,12 @@ def translate(origin_language: str, final_language: str, input_sentence: str) ->
     translate_info = get_config_info(CONFIG_PATH)['translate']
 
     # set the llm based in tool configs
-    if translate_info['llm']['api'] == 'sambastudio':
+    if translate_info['llm']['api'] == 'fastcoe':
+        llm = SambaStudioFastCoE(
+            max_tokens=translate_info['llm']['max_tokens_to_generate'],
+            model=translate_info['llm']['select_expert'],
+        )
+    elif translate_info['llm']['api'] == 'sambastudio':
         if translate_info['llm']['coe']:
             # Using SambaStudio CoE expert as model for generating the SQL Query
             llm = SambaStudio(
@@ -396,7 +453,12 @@ def rag(query: str) -> str:
     rag_info = get_config_info(CONFIG_PATH)['rag']
 
     # set the llm based in tool configs
-    if rag_info['llm']['api'] == 'sambastudio':
+    if rag_info['llm']['api'] == 'fastcoe':
+        llm = SambaStudioFastCoE(
+            max_tokens=rag_info['llm']['max_tokens_to_generate'],
+            model=rag_info['llm']['select_expert'],
+        )
+    elif rag_info['llm']['api'] == 'sambastudio':
         if rag_info['llm']['coe']:
             # Using SambaStudio CoE expert as model for generating the SQL Query
             llm = SambaStudio(
@@ -463,7 +525,33 @@ def rag(query: str) -> str:
         '\n ------- \n'
         'Answer: <|eot_id|><|start_header_id|>assistant<|end_header_id|>'
     )
-    retrieval_qa_prompt = PromptTemplate.from_template(prompt)
+
+    prompt_fastcoe = [
+        (
+            'system',
+            """ You are an assistant for question-answering tasks.\n
+            Use the following pieces of retrieved contexts to answer the question. 
+            If the information that is relevant to answering the question does not appear in the retrieved contexts, 
+            say "Could not find information.". Provide a concise answer to the question. 
+            Do not provide any information that is not asked for in the question. 
+            ```
+            """,
+        ),
+        (
+            'user',
+            """
+            Question: {question} \n
+            Context: {context} \n
+            \n ------- \n
+            """,
+        ),
+    ]
+
+    if rag_info['llm']['api'] == 'fastcoe':
+        retrieval_qa_prompt = PromptTemplate.from_template(prompt)  # ChatPromptTemplate.from_messages(prompt_fastcoe)
+    else:
+        retrieval_qa_prompt = PromptTemplate.from_template(prompt)
+
     qa_chain = RetrievalQA.from_llm(
         llm=llm,
         retriever=retriever,

@@ -1,40 +1,40 @@
 llm: 
-  "api": "sambastudio"  # set either sambastudio or sambaverse
+  "api": "fastcoe"  # set either sambastudio, sambaverse or fastcoe
   "temperature": 0.01
   "max_tokens_to_generate": 2048
   "sambaverse_model_name": "Meta/Meta-Llama-3-70B-Instruct"
   "coe": True #set as true if using Sambastudio CoE endpoint
-  "select_expert": "Meta-Llama-3-70B-Instruct" #set if using Sambaverse or SambaStudio CoE llm expert
+  "select_expert": "llama3-70b" #set if using Sambaverse or SambaStudio CoE llm expert recommended "Meta-Llama-3-70B-Instruct"
 
 tools:
     query_db:
       llm: 
-        "api": "sambastudio"  # set either sambastudio or sambaverse
+        "api": "fastcoe"  # set either sambastudio, sambaverse or fastcoe
         "temperature": 0.01 
         "max_tokens_to_generate": 1024
         "sambaverse_model_name": "Meta/Meta-Llama-3-70B-Instruct"
         "coe": True #set as true if using Sambastudio CoE endpoint
-        "select_expert": "Meta-Llama-3-70B-Instruct" #set if using Sambaverse or SambaStudio CoE llm expert
+        "select_expert": "llama3-70b" #set if using Sambaverse or SambaStudio CoE llm expert recommended "Meta-Llama-3-70B-Instruct"
       db:
         "path": "data/financial.db" #"data/chinook.db"
 
     translate:
       llm: 
-        "api": "sambastudio"  # set either sambastudio or sambaverse
+        "api": "fastcoe"  # set either sambastudio, sambaverse or fastcoe
         "temperature": 0.01 
         "max_tokens_to_generate": 1024
         "sambaverse_model_name": "Meta/Meta-Llama-3-70B-Instruct"
         "coe": True #set as true if using Sambastudio CoE endpoint
-        "select_expert": "Meta-Llama-3-70B-Instruct" #set if using Sambaverse or SambaStudio CoE llm expert
+        "select_expert": "llama3-70b" #set if using Sambaverse or SambaStudio CoE llm expert recommended "Meta-Llama-3-70B-Instruct"
 
     rag:
       llm:
-        "api": "sambastudio"  # set either sambastudio or sambaverse
+        "api": "fastcoe"  # set either sambastudio, sambaverse or fastcoe
         "temperature": 0.01 
         "max_tokens_to_generate": 1024
         "sambaverse_model_name": "Meta/Meta-Llama-3-8B-Instruct"
         "coe": True #set as true if using Sambastudio CoE endpoint
-        "select_expert": "Meta-Llama-3-8B-Instruct" #set if using Sambaverse or SambaStudio CoE llm expert
+        "select_expert": "llama3-70b" #set if using Sambaverse or SambaStudio CoE llm expert recommended "Meta-Llama-3-70B-Instruct"
       embedding_model: 
         "type": "sambastudio" # set either sambastudio or cpu
         "batch_size": 1 #set depending of your endpoint configuration (1 if CoE embedding expert)
