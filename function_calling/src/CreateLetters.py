@@ -18,7 +18,7 @@ sys.path.append(repo_dir)
 CONFIG_PATH = os.path.join(kit_dir, 'config.yaml')
 DB_PATH = os.path.join(kit_dir, 'data', 'financial.db')
 OUTPUT_PATH = os.path.join(kit_dir, 'data/letters')
-MAX_USERS = 10
+MAX_USERS = 100
 
 load_dotenv(os.path.join(repo_dir, '.env'))
 

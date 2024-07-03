@@ -220,7 +220,9 @@ class FunctionCallingLlm:
         for tool in invoked_tools:
             final_answer = False
             if tool['tool'].lower() != 'conversationalresponse':
+                print(f"\n\n---\nTool {tool['tool'].lower()} invoked with input {tool['tool_input']}\n")
                 response = tools_map[tool['tool'].lower()].invoke(tool['tool_input'])
+                print(f'Tool response: {str(response)}\n---\n\n')
                 tools_msgs.append(tool_msg.format(name=tool['tool'], response=str(response)))
         return final_answer, tools_msgs
 
@@ -314,26 +316,26 @@ class FunctionCallingLlm:
         tool_call_id = 0  # identification for each tool calling required to create ToolMessages
 
         for i in range(max_it):
-            pprint(f'History before it {history}\n\n')
             json_parsing_chain = RunnableLambda(self.jsonFinder) | JsonOutputParser()
 
             if self.llm_info['api'] == 'fastcoe':
                 prompt = self.msgs_to_fast_coe(history)
             else:
                 prompt = self.msgs_to_llama3_str(history)
+            print(f'\n\n---\nCalling function calling LLM with prompt: \n{prompt}\n')
             llm_response = self.llm.invoke(prompt)
-            print(f'raw llm controlelr response {llm_response}')
+            print(f'\nFunction calling LLM response: \n{llm_response}\n---\n')
             parsed_tools_llm_response = json_parsing_chain.invoke(llm_response)
             history.append(AIMessage(llm_response))
             final_answer, tools_msgs = self.execute(parsed_tools_llm_response)
             if final_answer:  # if response was marked as final response in execution
                 final_response = tools_msgs[0]
                 if debug:
-                    pprint(f'final history it {history}\n\n')
+                    print('\n\n---\nFinal function calling LLM history: \n')
+                    pprint(f'{history}')
                 return final_response
             else:
                 history.append(ToolMessage('\n'.join(tools_msgs), tool_call_id=tool_call_id))
                 tool_call_id += 1
-                pprint(f'History after it {history}\n\n')
 
         raise Exception('not a final response yet', history)

@@ -204,7 +204,7 @@ def sql_finder(text: str) -> str:
     #    <query>
     # ```
 
-    pprint(f'Query llm raw {text}\n\n')
+    print(f'query_db: query generation LLM raw response: \n{text}\n')
     sql_code_pattern = re.compile(r'```sql\s+(.*?)\s+```', re.DOTALL)
     match = sql_code_pattern.search(text)
     if match is not None:
@@ -231,8 +231,6 @@ def query_db(query: str) -> str:
 
     # get tool configs
     query_db_info = get_config_info(CONFIG_PATH)['query_db']
-
-    pprint(f'NL query from controller llm  {query}\n\n')
 
     # set the llm based in tool configs
     if query_db_info['llm']['api'] == 'fastcoe':
@@ -327,16 +325,22 @@ def query_db(query: str) -> str:
     else:
         query_generation_chain = prompt | llm | RunnableLambda(sql_finder)
     table_info = db.get_table_info()
+
+    print(f'query_db: Calling query generation LLM with input: \n{query}\n')
+
     query = query_generation_chain.invoke({'input': query, 'table_info': table_info})
 
-    pprint(f'Query llm filtered {query}\n\n')
+    print(f'query_db: query generation LLM filtered response: \n{query}\n')
 
     queries = query.split(';')
 
     query_executor = QuerySQLDataBaseTool(db=db)
     results = []
     for query in queries:
-        results.append(query_executor.invoke(query))
+        if query.strip() != '':
+            print(f'query_db: executing query: \n{query}\n')
+            results.append(query_executor.invoke(query))
+            print(f'query_db: query result: \n{results[-1]}\n')
 
     result = '\n'.join([f'Query {query} executed with result {result}' for query, result in zip(queries, results)])
     return result
