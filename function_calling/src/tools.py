@@ -47,27 +47,6 @@ def get_config_info(config_path: str) -> dict:
 
     return tools_info
 
-    def msgs_to_fast_coe(self, msgs: list) -> list:
-        """
-        convert a list of langchain messages with roles to expected FastCoE input
-
-        Args:
-            msgs (list): The list of langchain messages.
-        """
-        formatted_msgs = []
-        for msg in msgs:
-            if msg.type == 'system':
-                formatted_msgs.append({'role': 'system', 'content': msg.content})
-            elif msg.type == 'human':
-                formatted_msgs.append({'role': 'user', 'content': msg.content})
-            elif msg.type == 'ai':
-                formatted_msgs.append({'role': 'assistant', 'content': msg.content})
-            elif msg.type == 'tool':
-                formatted_msgs.append({'role': 'tools', 'content': msg.content})
-            else:
-                raise ValueError(f'Invalid message type: {msg.type}')
-        return json.dumps(formatted_msgs)
-
 
 ##Get time tool
 

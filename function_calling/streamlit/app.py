@@ -15,6 +15,7 @@ repo_dir = os.path.abspath(os.path.join(kit_dir, '..'))
 sys.path.append(kit_dir)
 sys.path.append(repo_dir)
 
+from function_calling.src.CreateLetters import create_letters  # type: ignore
 from function_calling.src.function_calling import FunctionCallingLlm  # type: ignore
 from function_calling.src.tools import calculator, get_time, python_repl, query_db, rag, translate  # type: ignore
 
@@ -147,6 +148,11 @@ def main() -> None:
                 st.session_state.chat_history = []
                 st.session_state.sources_history = []
                 st.toast('Interactions reset. The next response will clear the history on the screen')
+        st.markdown('** Batch execution **')
+        if st.button('Create letters'):
+            with st.spinner('Processing...'):
+                with st_capture(output.code):
+                    create_letters()
 
     handle_userinput(user_question)
 

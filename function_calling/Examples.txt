@@ -1,0 +1,16 @@
+Sample questions
+
+- Describe the database
+- Provide a quick profiling of the data in Customers table
+- Which card has the customer called "Németh Anikó"
+- Which account has the customer called "Kiss Mária" 
+- How many customers have Visa Online card?
+- How many customers have Smart account?
+- How many customers have Mastercard Gold card with Smart account?
+- Add a new card called American Express to the db
+- Add a new customer called "Tilinger Béla" who is 40 years old
+- In the db, modify customer "Tilinger Béla". Reassign card id to 5
+- Which card the customer "Tilinger Béla" has?
+- Delete customer "Tilinger Béla".
+- Is there a customer called "Tilinger Béla"?
+- In the db, change the account of all customers with age greater than 35 to accountId 5
