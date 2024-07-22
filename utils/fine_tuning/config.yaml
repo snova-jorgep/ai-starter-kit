@@ -1,26 +1,17 @@
 sambastudio:
-  tenant: "default"
   snapi_path: ""
   rdu_arch: "sn10"
 
 dataset:
-  dataset_name: "smol_sql_dataset"
-  dataset_description: "test_dataset for sql finetuning"
-  dataset_path: "../../fine_tuning_sql/data/output/smol_sql_dataset"
-  # dataset_apps_availability: 
-  #   - 'Mistral'
-  #   - 'Llama 3'
-  #   - 'Llama 2 with dynamic batching'
-  #   - 'Llama 2 7B','Llama 2 70B with dynamic batching'
-  #   - 'Llama 2 70B'
-  #   - 'Llama 2 13B'
-  # dataset_job_types:
-  #   - "evaluation"
-  #   - "train"
+  dataset_name: "mitre dataset test_5"
+  dataset_description: "mitre dataset test"
+  dataset_app_names: 
+  - "E5 Mistral Embedding"
+  - "Text Embedding" 
+  dataset_source_file: ./source.json
   dataset_source_type: "localMachine"
   dataset_language: "english"
   dataset_filetype: "hdf5"
-  dataset_url: ""
 
 project: 
   project_name: "SNSDK-E2E-Finetuning_Embeddings-Project"
