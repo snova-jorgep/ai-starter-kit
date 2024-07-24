@@ -19,15 +19,15 @@ from dotenv import load_dotenv
 
 load_dotenv("../.env", override=True)
 
+# Job types: can not combine train/evaluation with batch_predict
 JOB_TYPES = [
     "train",
     "evaluation",
     "batch_predict",
-]  # can not combine train/evaluation with batch_predict
-SOURCE_TYPES = [
-    "localMachine"
-]  # add note in readme that we're only supporting localMachine. TODO: future support for other types
-SOURCE_FILE_PATH = "./fine_tuning/src/source_file.json"  # temporal path, change name to make sure is temporal
+]
+# TODO: future support for other types
+SOURCE_TYPES = ["localMachine"]
+SOURCE_FILE_PATH = "./fine_tuning/src/source_file.json"
 
 
 class SnsdkWrapper:
@@ -469,7 +469,7 @@ class SnsdkWrapper:
             self._raise_error_if_config_is_none()
             dataset_language = self.config["dataset"]["dataset_language"]
 
-        # TODO: Metadata WIP
+        # TODO: Metadata WIP - waiting for channel's confirmation
         if dataset_metadata is None:
             self._raise_error_if_config_is_none()
             dataset_metadata = self.config["dataset"]["dataset_metadata"]
@@ -501,12 +501,12 @@ class SnsdkWrapper:
                 command, input=echo_response.stdout, capture_output=True, text=True
             )
 
-            # Check if possible errors in response
-            errors_found_in_response = (
+            errors_response = (
                 ("status_code" in snapi_response.stdout.lower())
                 and ("error occured" in snapi_response.stdout.lower())
             ) or (len(snapi_response.stderr) > 0)
-            if errors_found_in_response:
+            # if errors coming in response
+            if errors_response:
                 if len(snapi_response.stderr) > 0:
                     error_message = snapi_response.stderr
                 else:
@@ -517,13 +517,14 @@ class SnsdkWrapper:
                     f"Failed to create dataset with name '{dataset_name}'. Details: {error_message}"
                 )
                 raise Exception(f"Error message: {error_message}")
+            # if there are no errors in reponse
             else:
                 dataset_id = self.search_dataset(dataset_name=dataset_name)
                 logging.info(
                     f"Dataset with name '{dataset_name}' created: '{snapi_response.stdout}'"
                 )
                 return dataset_id
-        # TODO: add comment
+        # Dataset found, so return dataset id
         else:
             logging.info(
                 f"Dataset with name '{dataset_name}' already exists with id '{dataset_id}', using it"
