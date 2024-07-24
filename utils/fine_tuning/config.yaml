@@ -3,7 +3,7 @@ sambastudio:
   rdu_arch: "sn10"
 
 dataset:
-  dataset_name: "mitre dataset test_5"
+  dataset_name: "mitre dataset test_10"
   dataset_apps_availability: 
   - "E5 Mistral Embedding"
   - "Text Embedding" 
@@ -11,11 +11,15 @@ dataset:
     - "batch_predict"
   dataset_source_type: "localMachine"
   dataset_path: /Users/rodrigom/Desktop/aisk/finetuning/mitre
-  
   dataset_description: "mitre dataset test"
   dataset_filetype: "hdf5"
-  dataset_language: "english"
   dataset_url: ""
+  dataset_language: "english"
+  dataset_metadata:
+    labels_file: "./dummy_labels_path"
+    train_filepath: "./dummy_train_path"
+    validation_filepath: "./dummy_val_path"
+    test_filepath: "./dummy_test_path"
   
 project: 
   project_name: "SNSDK-E2E-Finetuning_Embeddings-Project"
