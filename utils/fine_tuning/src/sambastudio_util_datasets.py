@@ -24,8 +24,10 @@ JOB_TYPES = [
     "evaluation",
     "batch_predict",
 ]  # can not combine train/evaluation with batch_predict
-SOURCE_TYPES = ["local", "aws", "localMachine"]
-SOURCE_FILE_PATH = "./fine_tuning/src/source_file.json"
+SOURCE_TYPES = [
+    "localMachine"
+]  # add note in readme that we're only supporting localMachine. TODO: future support for other types
+SOURCE_FILE_PATH = "./fine_tuning/src/source_file.json"  # temporal path, change name to make sure is temporal
 
 
 class SnsdkWrapper:
@@ -101,16 +103,16 @@ class SnsdkWrapper:
 
     """Internal methods"""
 
-    def _set_snsdk_using_env_variables(
+    def _set_snapi_using_env_variables(
         self,
         host_name: str,
         access_key: str,
-        tenant_name: str,
         current_snapi_config: dict,
         snapi_config_path: str,
         snapi_secret_path: str,
+        tenant_name: str = "default",
     ) -> tuple:
-        """Sets Snsdk using env variables. It also validates if tenant can be set in Snapi config file.
+        """Sets Snapi using env variables. It also validates if tenant can be set in Snapi config file.
         Args:
             host_name (str): host name coming from env variables
             access_key (str): access key coming from env variables
@@ -211,13 +213,13 @@ class SnsdkWrapper:
             and (tenant_name is not None)
         ):
             logging.info(f"Using env variables to set up Snsdk.")
-            host_name, tenant_id, access_key = self._set_snsdk_using_env_variables(
+            host_name, tenant_id, access_key = self._set_snapi_using_env_variables(
                 host_name,
                 access_key,
-                tenant_name,
                 snapi_config,
                 snapi_config_path,
                 snapi_secret_path,
+                tenant_name,
             )
 
         else:
@@ -337,15 +339,30 @@ class SnsdkWrapper:
 
     def _build_snapi_dataset_add_command(
         self,
-        dataset_name,
-        dataset_apps_availability,
-        dataset_job_types,
-        dataset_source_type,
-        dataset_description,
-        dataset_filetype,
-        dataset_url,
-        dataset_language,
-    ):
+        dataset_name: str,
+        dataset_apps_availability: list,
+        dataset_job_types: list,
+        dataset_source_type: str,
+        dataset_description: str,
+        dataset_filetype: str,
+        dataset_url: str,
+        dataset_language: str,
+    ) -> str:
+        """Builds snapi command to add a dataset to SambaStudio.
+        Addresses apps and job types, since they're lists
+        Args:
+            dataset_name (str): dataset name
+            dataset_apps_availability (list): list of apps
+            dataset_job_types (list): list of job types
+            dataset_source_type (str): source type
+            dataset_description (str): dataset description
+            dataset_filetype (str): file type
+            dataset_url (str): url
+            dataset_language (str): language
+
+        Returns:
+            str: snapi command ready to execute
+        """
         # Get multiple job type parameters
         job_type_command_parameters = []
         for job_type in dataset_job_types:
@@ -384,20 +401,18 @@ class SnsdkWrapper:
 
     def create_dataset(
         self,
-        # snapi required parameters
         dataset_name: Optional[str] = None,
         dataset_apps_availability: Optional[List[str]] = None,
         dataset_job_types: Optional[List[str]] = None,
         dataset_source_type: Optional[str] = None,
-        dataset_path: Optional[str] = None,
-        # non-required paramaters
-        # TODO: add metadata file paths
-        # dataset_metadata_file: Optional[str] = None,
+        dataset_path: Optional[str] = None,  # add note in readme it must be absolute
         dataset_description: Optional[str] = None,
         dataset_filetype: Optional[str] = None,
         dataset_url: Optional[str] = None,
         dataset_language: Optional[str] = None,
-    ):
+        dataset_metadata: Optional[dict] = None,
+    ) -> str:
+        """ """
         # Decide whether using method parameters or config
         if dataset_name is None:
             self._raise_error_if_config_is_none()
@@ -454,6 +469,16 @@ class SnsdkWrapper:
             self._raise_error_if_config_is_none()
             dataset_language = self.config["dataset"]["dataset_language"]
 
+        # TODO: Metadata WIP
+        if dataset_metadata is None:
+            self._raise_error_if_config_is_none()
+            dataset_metadata = self.config["dataset"]["dataset_metadata"]
+        # for job_type in dataset_job_types:
+        #     if job_type == "batch_predict":
+        #         raise Exception(
+        #             f"Metadata is not valid for dataset with job type {job_type}"
+        #         )
+
         # Validate if dataset already exists
         dataset_id = self.search_dataset(dataset_name)
 
@@ -498,6 +523,7 @@ class SnsdkWrapper:
                     f"Dataset with name '{dataset_name}' created: '{snapi_response.stdout}'"
                 )
                 return dataset_id
+        # TODO: add comment
         else:
             logging.info(
                 f"Dataset with name '{dataset_name}' already exists with id '{dataset_id}', using it"
@@ -606,8 +632,8 @@ if __name__ == "__main__":
     #     dataset_language="english",
     # )
     # using config
-    # dataset = snsdkwrapper_client.create_dataset()
-    # print(dataset)
+    dataset = snsdkwrapper_client.create_dataset()
+    print(dataset)
 
     # delete dataset
     # existing dataset
