@@ -236,38 +236,6 @@ class WebCrawlingRetrieval:
             process_prompt=False,
             sambaverse_model_name=self.llm_info['sambaverse_model_name']
         )
-        # if self.api_info == 'sambaverse':
-        #     self.llm = Sambaverse(
-        #         sambaverse_model_name=self.llm_info['sambaverse_model_name'],
-        #         model_kwargs={
-        #             'do_sample': True,
-        #             'max_tokens_to_generate': self.llm_info['max_tokens_to_generate'],
-        #             'temperature': self.llm_info['temperature'],
-        #             'select_expert': self.llm_info['select_expert'],
-        #             'process_prompt': False
-        #         },
-        #     )
-
-        # elif self.api_info == 'sambastudio':
-        #     if self.llm_info["coe"]:
-        #         self.llm = SambaStudio(
-        #             streaming=True,
-        #             model_kwargs={
-        #                 "do_sample": False,
-        #                 "temperature": self.llm_info["temperature"],
-        #                 "max_tokens_to_generate": self.llm_info["max_tokens_to_generate"],
-        #                 "select_expert": self.llm_info["select_expert"],
-        #                 "process_prompt": False
-        #             }
-        #         )
-        #     else:
-        #         self.llm = SambaStudio(
-        #             model_kwargs={
-        #                 'do_sample': True,
-        #                 'temperature': self.llm_info['temperature'],
-        #                 'max_tokens_to_generate': self.llm_info['max_tokens_to_generate'],
-        #             }
-        #         )
 
     def create_load_vector_store(self, force_reload: bool = False, update: bool = False):
         """
