@@ -25,7 +25,6 @@ from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain_core.prompts import load_prompt
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import Chroma
-from langchain_community.llms.sambanova import Sambaverse, SambaStudio
 from utils.model_wrappers.api_gateway import APIGateway
 
 CONFIG_PATH = os.path.join(kit_dir,'config.yaml')
