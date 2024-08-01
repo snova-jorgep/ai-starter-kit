@@ -19,33 +19,34 @@ from transformers import AutoTokenizer
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
-from utils.sambanova_endpoint import SambaNovaEndpoint
-from vectordb.vector_db import VectorDb
+from utils.model_wrappers.api_gateway import APIGateway
+from utils.vectordb.vector_db import VectorDb
 from yoda.prompts.prompts import RAG_prompt_template, LLAMA_CHAT_PROMPT_PREFIX, LLAMA_CHAT_PROMPT_POSTFIX
 
 load_dotenv(os.path.join(repo_dir,'.env'))
 
-llm = SambaNovaEndpoint(
-    base_url=os.getenv('YODA_BASE_URL'),
-    project_id=os.getenv('YODA_PROJECT_ID'),
-    endpoint_id=os.getenv('FINETUNED_ENDPOINT_ID'),
-    api_key=os.getenv('FINETUNED_API_KEY'),
-    model_kwargs={
-        'do_sample': False,
-        'max_tokens_to_generate': 256
-    },
-)
+llm = APIGateway.load_llm(
+            type="sambastudio",
+            streaming=True,
+            coe=True,
+            do_sample=False,
+            max_tokens_to_generate=500,
+            temperature=0.0,
+            select_expert="Meta-Llama-3-8B-Instruct",
+            process_prompt=False
+        )
 
-llm_baseline = SambaNovaEndpoint(
-    base_url=os.getenv('YODA_BASE_URL'),
-    project_id=os.getenv('YODA_PROJECT_ID'),
-    endpoint_id=os.getenv('BASELINE_ENDPOINT_ID'),
-    api_key=os.getenv('BASELINE_API_KEY'),
-    model_kwargs={
-        'do_sample': False,
-        'max_tokens_to_generate': 256
-    },
-)
+llm_baseline = APIGateway.load_llm(
+            type="sambaverse",
+            streaming=True,
+            coe=True,
+            do_sample=False,
+            max_tokens_to_generate=500,
+            temperature=0.0,
+            select_expert="Meta-Llama-3-8B-Instruct",
+            process_prompt=False,
+            sambaverse_model_name="Meta/Meta-Llama-3-8B-Instruct"
+        )
 
 
 def parse_args():
