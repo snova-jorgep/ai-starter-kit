@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     # read in evaluation samples
     qa_eval_file = os.path.join(
-        data_dir, "processed_data", "synthetic_qa_eval.jsonl")
+        data_dir, "processed_data", "article_data.jsonl")
 
     eval_data = []
     with open(qa_eval_file) as reader:
@@ -105,10 +105,14 @@ if __name__ == '__main__':
                                          output_db=PERSIST_DIRECTORY,
                                          chunk_size=config["chunk_size"],
                                          chunk_overlap=config["chunk_overlap"],
-                                         db_type="chroma",
+                                         db_type="faiss",
                                          recursive=True,
-                                         tokenizer = tokenizer
-                                         )
+                                         tokenizer = tokenizer,
+                                         embedding_type="sambastudio",
+                                         batch_size=1,
+                                         coe=True,
+                                         select_expert="e5-mistral-7b-instruct",
+                                    )
 
     retriever = vectordb.as_retriever(search_kwargs={"k": RAG_CONTEXT_TOP_K})
 
