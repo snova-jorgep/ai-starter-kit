@@ -25,7 +25,6 @@ logging.basicConfig(
 )
 
 SNAPI_PATH = "~/.snapi"
-SNAPI_PATH = "~/.snapi"
 
 # Job types: can not combine train/evaluation with batch_predict
 JOB_TYPES = [
