@@ -15,7 +15,6 @@ repo_dir = os.path.abspath(os.path.join(utils_dir, ".."))
 sys.path.append(utils_dir)
 sys.path.append(repo_dir)
 load_dotenv(os.path.join(repo_dir, ".env"), override=True)
-load_dotenv(os.path.join(repo_dir, ".env"), override=True)
 
 logging.basicConfig(
     level=logging.INFO,
