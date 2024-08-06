@@ -37,8 +37,6 @@ JOB_TYPES = [
 SOURCE_TYPES = ["localMachine"]
 SOURCE_FILE_PATH = os.path.join(utils_dir, "fine_tuning", "src", "tmp_source_file.json")
 
-SOURCE_FILE_PATH = os.path.join(utils_dir, "fine_tuning", "src", "tmp_source_file.json")
-
 
 class SnsdkWrapper:
     """ "Wrapper around the SnSdk and SNAPI for E2E fine-tuning in SambaStudio"""
@@ -338,8 +336,6 @@ class SnsdkWrapper:
             project_name = self.config["project"]["project_name"]
         if project_description is None:
             self._raise_error_if_config_is_none()
-            project_description = self.config["project"]["project_description"]
-
             project_description = self.config["project"]["project_description"]
 
         project_id = self.search_project(project_name)
