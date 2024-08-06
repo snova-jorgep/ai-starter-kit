@@ -15,13 +15,16 @@ repo_dir = os.path.abspath(os.path.join(utils_dir, ".."))
 sys.path.append(utils_dir)
 sys.path.append(repo_dir)
 load_dotenv(os.path.join(repo_dir, ".env"), override=True)
+load_dotenv(os.path.join(repo_dir, ".env"), override=True)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
+    format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler()],
 )
 
+SNAPI_PATH = "~/.snapi"
 SNAPI_PATH = "~/.snapi"
 
 # Job types: can not combine train/evaluation with batch_predict
@@ -33,6 +36,8 @@ JOB_TYPES = [
 
 # TODO: future support for other types
 SOURCE_TYPES = ["localMachine"]
+SOURCE_FILE_PATH = os.path.join(utils_dir, "fine_tuning", "src", "tmp_source_file.json")
+
 SOURCE_FILE_PATH = os.path.join(utils_dir, "fine_tuning", "src", "tmp_source_file.json")
 
 
@@ -336,6 +341,8 @@ class SnsdkWrapper:
             self._raise_error_if_config_is_none()
             project_description = self.config["project"]["project_description"]
 
+            project_description = self.config["project"]["project_description"]
+
         project_id = self.search_project(project_name)
         if project_id is None:
             create_project_response = self.snsdk_client.create_project(
@@ -390,6 +397,9 @@ class SnsdkWrapper:
                     projects.append(project_info)
             return projects
         else:
+            logging.error(
+                f"Failed to list projects. Details: {list_projects_response['detail']}"
+            )
             logging.error(
                 f"Failed to list projects. Details: {list_projects_response['detail']}"
             )
